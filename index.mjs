@@ -21,23 +21,27 @@ const writer = async (bucket) => {
 
     console.log('Write blob with size %s kB',
         Math.round(blob.length / 1024));
-    await sleep(1000);
+    await sleep(100);
   }
 };
 
 const reader = async (bucket) => {
+  await sleep(1000);
   while (true) {
     const entryInfo = await bucket.getEntryList();
     const info = entryInfo.find(entry => entry.name === 'blobs');
 
-    const recordList = await bucket.list('blobs', info.oldestRecord,
+    console.log('Get list');
+    const recordList = await bucket.list('md-sums', info.oldestRecord,
         info.latestRecord);
     for (let i = 0; i < recordList.length; ++i) {
       console.log('Read record with ts=%s', recordList[i].timestamp);
       const blob = await bucket.read('blobs', recordList[i].timestamp);
       const mdSum = await bucket.read('md-sums', recordList[i].timestamp);
 
-      // TODO: check md5 summ
+      if (md5(blob) !== mdSum.toString()) {
+        throw Error("Wrong MD5 sum");
+      }
     }
 
     await sleep(100);
