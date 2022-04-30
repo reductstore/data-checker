@@ -1,0 +1,23 @@
+{
+  "name": "data-checker",
+  "version": "1.0.0",
+  "description": "A simple writer/reader to validate data in Reduct Storage",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reduct-storage/data-checker.git"
+  },
+  "author": "Alexey Timin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/reduct-storage/data-checker/issues"
+  },
+  "homepage": "https://github.com/reduct-storage/data-checker#readme",
+  "dependencies": {
+    "md5": "^2.3.0",
+    "reduct-js": "^0.2.0"
+  }
+}
