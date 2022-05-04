@@ -16,9 +16,8 @@ const writer = async (bucket) => {
     const blob = bigBlob.slice(0,
         Math.round(Math.random() * (bigBlob.length - 1)));
 
-    await bucket.write('blobs', blob, ts);
-    await bucket.write('md-sums', md5(blob), ts);
-
+    await bucket.write('test', Buffer.concat([blob, Buffer.from(md5(blob))]),
+        ts);
     console.log('Write blob with size %s kB ts=%s',
         Math.round(blob.length / 1024), ts);
     await sleep(100);
@@ -29,16 +28,16 @@ const reader = async (bucket) => {
   await sleep(1000);
   while (true) {
     const entryInfo = await bucket.getEntryList();
-    const info = entryInfo.find(entry => entry.name === 'blobs');
+    const info = entryInfo.find(entry => entry.name === 'test');
 
     console.log('Get list');
-    const recordList = await bucket.list('md-sums', info.oldestRecord,
+    const recordList = await bucket.list('test', info.oldestRecord,
         info.latestRecord);
     for (let i = 0; i < recordList.length; ++i) {
       console.log('Read record with ts=%s', recordList[i].timestamp);
-      const blob = await bucket.read('blobs', recordList[i].timestamp);
-      const mdSum = await bucket.read('md-sums', recordList[i].timestamp);
-      if (md5(blob) !== mdSum.toString()) {
+      const blob = await bucket.read('test', recordList[i].timestamp);
+      if (md5(blob.slice(0, blob.length - 32)) !==
+          blob.slice(blob.length - 32).toString()) {
         throw {
           message: 'Wrong MD5 sum',
           expected: md5(blob),
