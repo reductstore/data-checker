@@ -36,16 +36,10 @@ const reader = async (bucket) => {
         info.latestRecord);
     for (let i = 0; i < recordList.length; ++i) {
       console.log('Read record with ts=%s', recordList[i].timestamp);
-      try {
-        const blob = await bucket.read('blobs', recordList[i].timestamp);
-        const mdSum = await bucket.read('md-sums', recordList[i].timestamp+1n);
-        if (md5(blob) !== mdSum.toString()) {
-          throw Error('Wrong MD5 sum');
-        }
-      } catch (err) {
-        if (!err.code || err.code !== 404) {
-         throw err;
-        }
+      const blob = await bucket.read('blobs', recordList[i].timestamp);
+      const mdSum = await bucket.read('md-sums', recordList[i].timestamp);
+      if (md5(blob) !== mdSum.toString()) {
+        throw Error('Wrong MD5 sum');
       }
 
     }
@@ -60,6 +54,6 @@ client.getOrCreateBucket('test-bucket',
       await Promise.all([writer(bucket), reader(bucket)]);
     }).
     catch((err) => {
-      console.error("[ERROR] %s", JSON.stringify(err));
+      console.error('[ERROR] %s', JSON.stringify(err));
       process.exit(-1);
     });
