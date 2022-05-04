@@ -43,7 +43,7 @@ const reader = async (bucket) => {
           message: 'Wrong MD5 sum',
           expected: md5(blob),
           received: mdSum.toString(),
-          timestamp: recordList[i].timestamp,
+          timestamp: recordList[i].timestamp.toString(),
         };
       }
 
