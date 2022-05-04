@@ -36,12 +36,14 @@ const reader = async (bucket) => {
     for (let i = 0; i < recordList.length; ++i) {
       console.log('Read record with ts=%s', recordList[i].timestamp);
       const blob = await bucket.read('test', recordList[i].timestamp);
-      if (md5(blob.slice(0, blob.length - 32)) !==
-          blob.slice(blob.length - 32).toString()) {
+      const expected = md5(blob.slice(0, blob.length - 32));
+      const received =
+          blob.slice(blob.length - 32).toString();
+      if (expected !== received) {
         throw {
           message: 'Wrong MD5 sum',
-          expected: md5(blob),
-          received: mdSum.toString(),
+          expected: expected,
+          received: received,
           timestamp: recordList[i].timestamp.toString(),
         };
       }
