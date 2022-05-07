@@ -31,7 +31,8 @@ const reader = async (bucket) => {
     const info = entryInfo.find(entry => entry.name === 'test');
 
     console.log('Get list');
-    const recordList = await bucket.list('test', info.oldestRecord,
+    const recordList = await bucket.list('test',
+        info.latestRecord - 3_600_000_000n,
         info.latestRecord);
     for (let i = 0; i < recordList.length; ++i) {
       console.log('Read record with ts=%s', recordList[i].timestamp);
