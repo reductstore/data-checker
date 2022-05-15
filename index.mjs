@@ -54,6 +54,7 @@ const reader = async (bucket) => {
 client.getOrCreateBucket('test-bucket',
     {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).
     then(async (bucket) => {
+      console.info("Run checker");
       await Promise.all([writer(bucket), reader(bucket)]);
     }).
     catch((err) => {
