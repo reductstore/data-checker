@@ -18,8 +18,6 @@ const writer = async (bucket) => {
 
     await bucket.write('test', Buffer.concat([blob, Buffer.from(md5(blob))]),
         ts);
-    console.log('Write blob with size %s kB ts=%s',
-        Math.round(blob.length / 1024), ts);
     await sleep(100);
   }
 };
@@ -30,12 +28,10 @@ const reader = async (bucket) => {
     const entryInfo = await bucket.getEntryList();
     const info = entryInfo.find(entry => entry.name === 'test');
 
-    console.log('Get list');
     const recordList = await bucket.list('test',
         info.latestRecord - 3_600_000_000n,
         info.latestRecord);
     for (let i = 0; i < recordList.length; ++i) {
-      console.log('Read record with ts=%s', recordList[i].timestamp);
       const blob = await bucket.read('test', recordList[i].timestamp);
       const expected = md5(blob.slice(0, blob.length - 32));
       const received =
