@@ -3,10 +3,11 @@ import crypto from 'crypto';
 import md5 from 'md5';
 
 const serverUrl = process.env.REDUCT_STORAGE_URL;
+const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 32212254720n;
 const entryName = 'test';
 
-const client = new Client(serverUrl, {timeout: 10_000});
+const client = new Client(serverUrl, {timeout: 10_000, apiToken: apiToken});
 const bigBlob = crypto.randomBytes(2 ** 20);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
