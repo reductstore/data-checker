@@ -7,7 +7,7 @@ const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 32212254720n;
 const entryName = 'test';
 
-const client = new Client(serverUrl, {timeout: 10_000, apiToken: apiToken});
+const client = new Client(serverUrl, {apiToken: apiToken});
 const bigBlob = crypto.randomBytes(2 ** 20);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
