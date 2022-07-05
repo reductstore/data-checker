@@ -19,6 +19,6 @@
   "homepage": "https://github.com/reduct-storage/data-checker#readme",
   "dependencies": {
     "md5": "^2.3.0",
-    "reduct-js": "^0.4.1"
+    "reduct-js": "^0.5.0"
   }
 }
