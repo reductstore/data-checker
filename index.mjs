@@ -2,7 +2,7 @@ import {Client, QuotaType} from 'reduct-js';
 import crypto from 'crypto';
 import md5 from 'md5';
 
-const serverUrl = process.env.REDUCT_STORAGE_URL + "00";
+const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 32212254720n;
 const entryName = 'test';
