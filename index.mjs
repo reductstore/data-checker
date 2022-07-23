@@ -4,10 +4,12 @@ import md5 from 'md5';
 
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
-const size30Gb = 32212254720n;
+const size30Gb = 30_000_000;
 const entryName = 'test';
 
-const client = new Client(serverUrl, {apiToken: apiToken});
+const clientReader = new Client(serverUrl, {apiToken: apiToken});
+const clientWriter = new Client(serverUrl, {apiToken: apiToken});
+
 const bigBlob = crypto.randomBytes(2 ** 20);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -53,11 +55,21 @@ const reader = async (bucket) => {
   }
 };
 
-client.getOrCreateBucket('data',
+clientWriter.getOrCreateBucket('data',
     {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).
     then(async (bucket) => {
-      console.info('Run checker');
-      await Promise.all([writer(bucket), reader(bucket)]);
+      console.info('Run writer');
+      await writer(bucket);
+    }).
+    catch((err) => {
+      console.error('[ERROR] %s', err.original);
+      process.exit(-1);
+    });
+
+clientReader.getBucket('data').
+    then(async (bucket) => {
+      console.info('Run reader');
+      await reader(bucket);
     }).
     catch((err) => {
       console.error('[ERROR] %s', err.original);
