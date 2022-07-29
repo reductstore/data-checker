@@ -4,7 +4,7 @@ import md5 from 'md5';
 
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
-const size30Gb = 30_000_000;
+const size30Gb = 30_000_000_000;
 const entryName = 'test';
 
 const clientReader = new Client(serverUrl, {apiToken: apiToken});
@@ -32,11 +32,9 @@ const reader = async (bucket) => {
     const entryInfo = await bucket.getEntryList();
     const info = entryInfo.find(entry => entry.name === entryName);
 
-    const recordList = await bucket.list(entryName,
-        info.latestRecord - 3_600_000_000n,
-        info.latestRecord);
-    for (let i = 0; i < recordList.length; ++i) {
-      const blob = await bucket.read(entryName, recordList[i].timestamp);
+    console.info("query");
+    for await (const record of bucket.query(entryName)) {
+      const blob = await record.read();
       const expected = md5(blob.slice(0, blob.length - 32));
       const received =
           blob.slice(blob.length - 32).toString();
