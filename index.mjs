@@ -32,7 +32,7 @@ const reader = async (bucket) => {
     const entryInfo = await bucket.getEntryList();
     const info = entryInfo.find(entry => entry.name === entryName);
 
-    console.info("query");
+    console.info('query');
     for await (const record of bucket.query(entryName)) {
       const blob = await record.read();
       const expected = md5(blob.slice(0, blob.length - 32));
@@ -46,10 +46,9 @@ const reader = async (bucket) => {
           timestamp: recordList[i].timestamp.toString(),
         };
       }
-
+      await sleep(100);
     }
 
-    await sleep(100);
   }
 };
 
