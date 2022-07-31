@@ -6,7 +6,7 @@ const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 30_000_000_000;
 const entryName = 'test';
-const intervalMs = 200;
+const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
 const clientReader = new Client(serverUrl, {apiToken: apiToken});
 const clientWriter = new Client(serverUrl, {apiToken: apiToken});
