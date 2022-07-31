@@ -6,6 +6,7 @@ const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 30_000_000_000;
 const entryName = 'test';
+const intervalMs = 200;
 
 const clientReader = new Client(serverUrl, {apiToken: apiToken});
 const clientWriter = new Client(serverUrl, {apiToken: apiToken});
@@ -16,13 +17,13 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const writer = async (bucket) => {
   while (true) {
-    const ts = BigInt(Date.now()) * 1000n;
+    const now = Date.now();
     const blob = bigBlob.slice(0,
         Math.round(Math.random() * (bigBlob.length - 1)));
 
     await bucket.write(entryName, Buffer.concat([blob, Buffer.from(md5(blob))]),
-        ts);
-    await sleep(100);
+        BigInt(now) * 1000n);
+    await sleep(intervalMs - (Date.now() - now));
   }
 };
 
@@ -34,6 +35,7 @@ const reader = async (bucket) => {
 
     console.info('query');
     for await (const record of bucket.query(entryName)) {
+      const now = Date.now();
       const blob = await record.read();
       const expected = md5(blob.slice(0, blob.length - 32));
       const received =
@@ -46,7 +48,7 @@ const reader = async (bucket) => {
           timestamp: recordList[i].timestamp.toString(),
         };
       }
-      await sleep(100);
+      await sleep(intervalMs - (Date.now() - now));
     }
 
   }
