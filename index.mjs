@@ -54,6 +54,8 @@ const reader = async (bucket) => {
   }
 };
 
+console.log(`IO interval ${intervalMs} ms`);
+
 clientWriter.getOrCreateBucket('data',
     {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).
     then(async (bucket) => {
