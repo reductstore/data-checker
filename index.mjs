@@ -16,63 +16,59 @@ const bigBlob = crypto.randomBytes(2 ** 20);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const writer = async (bucket) => {
-  while (true) {
-    const now = Date.now();
-    const blob = bigBlob.slice(0,
-        Math.round(Math.random() * (bigBlob.length - 1)));
+    while (true) {
+        const now = Date.now();
+        const blob = bigBlob.slice(0,
+            Math.round(Math.random() * (bigBlob.length - 1)));
 
-    await bucket.write(entryName, Buffer.concat([blob, Buffer.from(md5(blob))]),
-        BigInt(now) * 1000n);
-    await sleep(intervalMs - (Date.now() - now));
-  }
+        await bucket.write(entryName, Buffer.concat([blob, Buffer.from(md5(blob))]),
+            BigInt(now) * 1000n);
+        await sleep(intervalMs - (Date.now() - now));
+    }
 };
 
 const reader = async (bucket) => {
-  await sleep(1000);
-  while (true) {
-    const entryInfo = await bucket.getEntryList();
-    const info = entryInfo.find(entry => entry.name === entryName);
+    await sleep(1000);
+    while (true) {
+        const entryInfo = await bucket.getEntryList();
+        const info = entryInfo.find(entry => entry.name === entryName);
 
-    console.info('query');
-    for await (const record of bucket.query(entryName)) {
-      const now = Date.now();
-      const blob = await record.read();
-      const expected = md5(blob.slice(0, blob.length - 32));
-      const received =
-          blob.slice(blob.length - 32).toString();
-      if (expected !== received) {
-        throw {
-          message: 'Wrong MD5 sum',
-          expected: expected,
-          received: received,
-          timestamp: recordList[i].timestamp.toString(),
-        };
-      }
-      await sleep(intervalMs - (Date.now() - now));
+        console.info('query');
+        for await (const record of bucket.query(entryName)) {
+            const now = Date.now();
+            const blob = await record.read();
+            const expected = md5(blob.slice(0, blob.length - 32));
+            const received =
+                blob.slice(blob.length - 32).toString();
+            if (expected !== received) {
+                throw {
+                    message: 'Wrong MD5 sum',
+                    expected: expected,
+                    received: received,
+                    timestamp: recordList[i].timestamp.toString(),
+                };
+            }
+            await sleep(intervalMs - (Date.now() - now));
+        }
+
     }
-
-  }
 };
 
 console.log(`IO interval ${intervalMs} ms`);
 
 clientWriter.getOrCreateBucket('data',
-    {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).
-    then(async (bucket) => {
-      console.info('Run writer');
-      await writer(bucket);
-    }).
-    catch((err) => {
-      console.error('[ERROR] %s', err.original);
-      process.exit(-1);
-    });
+    {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).then(async (bucket) => {
+    console.info('Run writer');
+    await writer(bucket);
+}).catch((err) => {
+    console.error('[ERROR] %s', err);
+    process.exit(-1);
+});
 
-clientReader.getBucket('data').
-    then(async (bucket) => {
-      console.info('Run reader');
-      await reader(bucket);
-    }).
-    catch((err) => {
-      console.error('[ERROR] %s', err.original);
-      process.exit(-1);
-    });
+clientReader.getBucket('data').then(async (bucket) => {
+    console.info('Run reader');
+    await reader(bucket);
+}).catch((err) => {
+    console.error('[ERROR] %s', err);
+    process.exit(-1);
+});
