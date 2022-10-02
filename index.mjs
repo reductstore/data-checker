@@ -21,8 +21,8 @@ const writer = async (bucket) => {
         const blob = bigBlob.slice(0,
             Math.round(Math.random() * (bigBlob.length - 1)));
 
-        await bucket.write(entryName, Buffer.concat([blob, Buffer.from(md5(blob))]),
-            BigInt(now) * 1000n);
+        const record = await bucket.beginWrite(entryName, BigInt(now) * 1000n);
+        await record.write(Buffer.concat([blob, Buffer.from(md5(blob))]));
         await sleep(intervalMs - (Date.now() - now));
     }
 };
