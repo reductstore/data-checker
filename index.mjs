@@ -5,7 +5,7 @@ import md5 from 'md5';
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 30_000_000_000;
-const entryName = 'test';
+const entryName = 'test-with-labels';
 const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
 const clientReader = new Client(serverUrl, {apiToken: apiToken});
@@ -21,8 +21,8 @@ const writer = async (bucket) => {
         const blob = bigBlob.slice(0,
             Math.round(Math.random() * (bigBlob.length - 1)));
 
-        const record = await bucket.beginWrite(entryName, BigInt(now) * 1000n);
-        await record.write(Buffer.concat([blob, Buffer.from(md5(blob))]));
+        const record = await bucket.beginWrite(entryName, BigInt(now) * 1000n, {md5: md5(blob)});
+        await record.write(blob);
         await sleep(intervalMs - (Date.now() - now));
     }
 };
@@ -37,18 +37,15 @@ const reader = async (bucket) => {
         for await (const record of bucket.query(entryName)) {
             const now = Date.now();
             const blob = await record.read();
-            const expected = md5(blob.slice(0, blob.length - 32));
-            const received =
-                blob.slice(blob.length - 32).toString();
-            if (expected !== received) {
+            if (md5(blob) !== record.labels.md5) {
                 throw {
                     message: 'Wrong MD5 sum',
-                    expected: expected,
-                    received: received,
-                    timestamp: recordList[i].timestamp.toString(),
+                    expected: record.labels.md5,
+                    received: md5(blob),
+                    timestamp: record.timestamp,
                 };
             }
-            await sleep(intervalMs - (Date.now() - now));
+            await sleep(intervalMs * 0.8 - (Date.now() - now)); // be faster than writer
         }
 
     }
