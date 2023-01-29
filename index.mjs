@@ -20,8 +20,15 @@ const writer = async (bucket) => {
         const now = Date.now();
         const blob = bigBlob.slice(0,
             Math.round(Math.random() * (bigBlob.length - 1)));
+        let size = "medium";
+        if (blob.length > bigBlob.length * 0.66) {
+            size = "big";
+        }
+        if (blob.length < bigBlob.length * 0.33) {
+            size = "small";
+        }
 
-        const record = await bucket.beginWrite(entryName, BigInt(now) * 1000n, {md5: md5(blob)});
+        const record = await bucket.beginWrite(entryName, BigInt(now) * 1000n, {md5: md5(blob), size: size});
         await record.write(blob);
         await sleep(intervalMs - (Date.now() - now));
     }
