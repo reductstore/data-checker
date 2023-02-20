@@ -60,7 +60,7 @@ const reader = async (bucket) => {
 
 console.log(`IO interval ${intervalMs} ms`);
 
-clientWriter.getOrCreateBucket('stress_test',
+clientWriter.getBucket('stress_test',
     {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).then(async (bucket) => {
     console.info('Run writer');
     await writer(bucket);
