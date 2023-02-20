@@ -5,7 +5,7 @@ import md5 from 'md5';
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
 const size30Gb = 30_000_000_000;
-const entryName = 'test-with-labels';
+const entryName = 'test-entry';
 const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
 const clientReader = new Client(serverUrl, {apiToken: apiToken});
@@ -28,7 +28,7 @@ const writer = async (bucket) => {
             size = "small";
         }
 
-        const record = await bucket.beginWrite(entryName, BigInt(now) * 1000n, {md5: md5(blob), size: size});
+        const record = await bucket.beginWrite(entryName, {labels: {md5: md5(blob), size: size}});
         await record.write(blob);
         await sleep(intervalMs - (Date.now() - now));
     }
@@ -49,7 +49,7 @@ const reader = async (bucket) => {
                     message: 'Wrong MD5 sum',
                     expected: record.labels.md5,
                     received: md5(blob),
-                    timestamp: record.timestamp,
+                    timestamp: record.time,
                 };
             }
             await sleep(intervalMs * 0.8 - (Date.now() - now)); // be faster than writer
