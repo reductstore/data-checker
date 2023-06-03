@@ -8,6 +8,8 @@ const size30Gb = 30_000_000_000;
 const entryName = 'test-entry';
 const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
+console.log(`Server URL ${serverUrl}`);
+
 const clientReader = new Client(serverUrl, {apiToken: apiToken});
 const clientWriter = new Client(serverUrl, {apiToken: apiToken});
 
@@ -60,7 +62,7 @@ const reader = async (bucket) => {
 
 console.log(`IO interval ${intervalMs} ms`);
 
-clientWriter.getBucket('stress_test',
+clientWriter.getOrCreateBucket('stress_test',
     {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).then(async (bucket) => {
     console.info('Run writer');
     await writer(bucket);
