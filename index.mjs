@@ -38,9 +38,9 @@ const reader = async (bucket) => {
     await sleep(1000);
     while (true) {
         const entryInfo = await bucket.getEntryList();
-        entryInfo.find(entry => entry.name === entryName);
+        let entry = entryInfo.find(entry => entry.name === entryName);
         console.info('query');
-        for await (const record of bucket.query(entryName)) {
+        for await (const record of bucket.query(entryName, entry.oldestRecord + 30_000_000n, undefined, {ttl: 30})) {
             const now = Date.now();
             const blob = await record.read();
             if (md5(blob) !== record.labels.md5) {
