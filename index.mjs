@@ -1,17 +1,15 @@
-import {Client, QuotaType} from 'reduct-js';
+import {Client} from 'reduct-js';
 import crypto from 'crypto';
 import md5 from 'md5';
 
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
-const size30Gb = 30_000_000_000;
 const entryName = 'test-entry';
 const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
 console.log(`Server URL ${serverUrl}`);
 
-const clientReader = new Client(serverUrl, {apiToken: apiToken});
-const clientWriter = new Client(serverUrl, {apiToken: apiToken});
+const client = new Client(serverUrl, {apiToken: apiToken});
 
 const bigBlob = crypto.randomBytes(2 ** 20);
 
@@ -40,8 +38,7 @@ const reader = async (bucket) => {
     await sleep(1000);
     while (true) {
         const entryInfo = await bucket.getEntryList();
-        const info = entryInfo.find(entry => entry.name === entryName);
-
+        entryInfo.find(entry => entry.name === entryName);
         console.info('query');
         for await (const record of bucket.query(entryName)) {
             const now = Date.now();
@@ -62,8 +59,7 @@ const reader = async (bucket) => {
 
 console.log(`IO interval ${intervalMs} ms`);
 
-clientWriter.getOrCreateBucket('stress_test',
-    {quotaType: QuotaType.FIFO, quotaSize: size30Gb}).then(async (bucket) => {
+client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run writer');
     await writer(bucket);
 }).catch((err) => {
@@ -71,7 +67,7 @@ clientWriter.getOrCreateBucket('stress_test',
     process.exit(-1);
 });
 
-clientReader.getBucket('stress_test').then(async (bucket) => {
+client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run reader');
     await reader(bucket);
 }).catch((err) => {
