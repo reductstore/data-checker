@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/reduct-storage/data-checker#readme",
   "dependencies": {
+    "console-stamp": "^3.1.2",
     "md5": "^2.3.0",
     "reduct-js": "1.7.4"
   }

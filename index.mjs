@@ -1,6 +1,9 @@
 import {Client} from 'reduct-js';
 import crypto from 'crypto';
 import md5 from 'md5';
+import consoleStamp from "console-stamp";
+
+consoleStamp(console, 'HH:MM:ss.l');
 
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
@@ -10,7 +13,6 @@ const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 console.log(`Server URL ${serverUrl}`);
 
 const client = new Client(serverUrl, {apiToken: apiToken, timeout: 5000});
-
 const bigBlob = crypto.randomBytes(2 ** 20);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -44,7 +46,6 @@ const reader = async (bucket) => {
             const now = Date.now();
             //console.info('start reading');
             const blob = await record.read();
-            //console.info('commit reading');
             if (md5(blob) !== record.labels.md5) {
                 throw {
                     message: 'Wrong MD5 sum',
@@ -65,7 +66,7 @@ client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run writer');
     await writer(bucket);
 }).catch((err) => {
-    console.error('[ERROR] WRITER %s', err);
+    console.error('WRITER %s', err);
     process.exit(-1);
 });
 
@@ -73,6 +74,7 @@ client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run reader');
     await reader(bucket);
 }).catch((err) => {
-    console.error('[ERROR] READER %s', err);
+    console.error('READER %s', err);
     process.exit(-1);
 });
+
