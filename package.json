@@ -1,7 +1,7 @@
 {
   "name": "data-checker",
   "version": "1.0.0",
-  "description": "A simple writer/reader to validate data in Reduct Storage",
+  "description": "A simple writer/reader to validate data in ReductStore",
   "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,6 +19,6 @@
   "homepage": "https://github.com/reduct-storage/data-checker#readme",
   "dependencies": {
     "md5": "^2.3.0",
-    "reduct-js": "1.7.3"
+    "reduct-js": "1.7.4"
   }
 }

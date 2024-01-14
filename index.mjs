@@ -9,7 +9,7 @@ const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
 console.log(`Server URL ${serverUrl}`);
 
-const client = new Client(serverUrl, {apiToken: apiToken});
+const client = new Client(serverUrl, {apiToken: apiToken, timeout: 5000});
 
 const bigBlob = crypto.randomBytes(2 ** 20);
 
@@ -42,7 +42,9 @@ const reader = async (bucket) => {
         console.info('query');
         for await (const record of bucket.query(entryName, entry.oldestRecord + 30_000_000n, undefined, {ttl: 30})) {
             const now = Date.now();
+            //console.info('start reading');
             const blob = await record.read();
+            //console.info('commit reading');
             if (md5(blob) !== record.labels.md5) {
                 throw {
                     message: 'Wrong MD5 sum',
@@ -63,7 +65,7 @@ client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run writer');
     await writer(bucket);
 }).catch((err) => {
-    console.error('[ERROR] %s', err);
+    console.error('[ERROR] WRITER %s', err);
     process.exit(-1);
 });
 
@@ -71,6 +73,6 @@ client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run reader');
     await reader(bucket);
 }).catch((err) => {
-    console.error('[ERROR] %s', err);
+    console.error('[ERROR] READER %s', err);
     process.exit(-1);
 });
