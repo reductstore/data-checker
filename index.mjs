@@ -7,7 +7,8 @@ consoleStamp(console, 'HH:MM:ss.l');
 
 const serverUrl = process.env.REDUCT_STORAGE_URL;
 const apiToken = process.env.REDUCT_API_TOKEN;
-const entryName = 'test-entry';
+const entryName = process.env.REDUCT_ENTRY_NAME ? process.env.REDUCT_ENTRY_NAME : 'test-entry';
+const role = process.env.REDUCT_ROLE ? process.env.REDUCT_ROLE : 'reader';
 const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 
 console.log(`Server URL ${serverUrl}`);
@@ -62,6 +63,7 @@ const reader = async (bucket) => {
 
 console.log(`IO interval ${intervalMs} ms`);
 
+if (role !== 'reader') {
 client.getBucket('stress_test').then(async (bucket) => {
     console.info('Run writer');
     await writer(bucket);
@@ -69,12 +71,14 @@ client.getBucket('stress_test').then(async (bucket) => {
     console.error('WRITER %s', err);
     process.exit(-1);
 });
+}
 
-client.getBucket('stress_test').then(async (bucket) => {
-    console.info('Run reader');
-    await reader(bucket);
-}).catch((err) => {
-    console.error('READER %s', err);
-    process.exit(-1);
-});
-
+if (role === 'reader') {
+    client.getBucket('stress_test').then(async (bucket) => {
+        console.info('Run reader');
+        await reader(bucket);
+    }).catch((err) => {
+        console.error('READER %s', err);
+        process.exit(-1);
+    });
+}
