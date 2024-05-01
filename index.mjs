@@ -43,7 +43,7 @@ const reader = async (bucket) => {
         const entryInfo = await bucket.getEntryList();
         let entry = entryInfo.find(entry => entry.name === entryName);
         console.info('query');
-        for await (const record of bucket.query(entryName, entry.oldestRecord + 30_000_000n, undefined, {ttl: 30})) {
+        for await (const record of bucket.query(entryName, undefined, undefined, {limit: 100})) {
             const now = Date.now();
             //console.info('start reading');
             const blob = await record.read();
@@ -55,7 +55,7 @@ const reader = async (bucket) => {
                     timestamp: record.time,
                 };
             }
-            await sleep(intervalMs * 0.8 - (Date.now() - now)); // be faster than writer
+            await sleep(intervalMs - (Date.now() - now));
         }
 
     }
