@@ -43,8 +43,8 @@ const reader = async (bucket) => {
         const entryInfo = await bucket.getEntryList();
         let entry = entryInfo.find(entry => entry.name === entryName);
         console.info('query');
+        const now = Date.now();
         for await (const record of bucket.query(entryName, undefined, undefined, {limit: 100})) {
-            const now = Date.now();
             //console.info('start reading');
             const blob = await record.read();
             if (md5(blob) !== record.labels.md5) {
@@ -55,8 +55,8 @@ const reader = async (bucket) => {
                     timestamp: record.time,
                 };
             }
-            await sleep(intervalMs - (Date.now() - now));
         }
+        await sleep(intervalMs - (Date.now() - now));
 
     }
 };
