@@ -44,7 +44,7 @@ const reader = async (bucket) => {
         let entry = entryInfo.find(entry => entry.name === entryName);
         console.info('query');
         const now = Date.now();
-        for await (const record of bucket.query(entryName, undefined, undefined, {limit: 100})) {
+        for await (const record of bucket.query(entryName, undefined, undefined, {limit: 5})) {
             //console.info('start reading');
             const blob = await record.read();
             if (md5(blob) !== record.labels.md5) {
