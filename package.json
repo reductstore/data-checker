@@ -20,6 +20,6 @@
   "dependencies": {
     "console-stamp": "^3.1.2",
     "md5": "^2.3.0",
-    "reduct-js": "1.9"
+    "reduct-js": "1.10.1"
   }
 }
