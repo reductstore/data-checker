@@ -44,9 +44,11 @@ const reader = async (bucket) => {
         let entry = entryInfo.find(entry => entry.name === entryName);
         console.info('query');
         const now = Date.now();
+        console.log(`start query ${entry.latestRecord - 10_000_000n}`)
         for await (const record of bucket.query(entryName, entry.latestRecord - 10_000_000n , undefined, {limit: 5})) {
-            //console.info('start reading');
+            console.info(`start reading ${record.time}`);
             const blob = await record.read();
+            console.info(`end reading ${record.time}`);
             if (md5(blob) !== record.labels.md5) {
                 throw {
                     message: 'Wrong MD5 sum',
@@ -56,6 +58,7 @@ const reader = async (bucket) => {
                 };
             }
         }
+
         await sleep(intervalMs - (Date.now() - now));
 
     }
