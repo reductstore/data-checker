@@ -45,7 +45,7 @@ const reader = async (bucket) => {
         console.info('query');
         const now = Date.now();
         console.log(`start query ${entry.latestRecord - 10_000_000n}`)
-        for await (const record of bucket.query(entryName, entry.latestRecord - 10_000_000n , undefined, {limit: 5})) {
+        for await (const record of bucket.query(entryName, entry.latestRecord - 10_000_000n, undefined, {limit: 5})) {
             console.info(`start reading ${record.time}`);
             const blob = await record.read();
             console.info(`end reading ${record.time}`);
@@ -57,6 +57,8 @@ const reader = async (bucket) => {
                     timestamp: record.time,
                 };
             }
+            console.info(`end md5 calc ${record.time}`);
+
         }
 
         await sleep(intervalMs - (Date.now() - now));
@@ -67,13 +69,13 @@ const reader = async (bucket) => {
 console.log(`IO interval ${intervalMs} ms`);
 
 if (role !== 'reader') {
-client.getBucket('stress_test').then(async (bucket) => {
-    console.info('Run writer');
-    await writer(bucket);
-}).catch((err) => {
-    console.error('WRITER %s', err);
-    process.exit(-1);
-});
+    client.getBucket('stress_test').then(async (bucket) => {
+        console.info('Run writer');
+        await writer(bucket);
+    }).catch((err) => {
+        console.error('WRITER %s', err);
+        process.exit(-1);
+    });
 }
 
 if (role === 'reader') {
