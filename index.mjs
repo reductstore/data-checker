@@ -33,6 +33,7 @@ const writer = async (bucket) => {
 
         const record = await bucket.beginWrite(entryName, {labels: {md5: md5(blob), size: size}});
         await record.write(blob);
+        console.log(`Write ${blob.length} bytes`);
         await sleep(intervalMs - (Date.now() - now));
     }
 };
@@ -46,9 +47,7 @@ const reader = async (bucket) => {
         const now = Date.now();
         console.log(`start query ${entry.latestRecord - 10_000_000n}`)
         for await (const record of bucket.query(entryName, entry.latestRecord - 10_000_000n, undefined, {limit: 5})) {
-            console.info(`start reading ${record.time}`);
             const blob = await record.read();
-            console.info(`end reading ${record.time}`);
             if (md5(blob) !== record.labels.md5) {
                 throw {
                     message: 'Wrong MD5 sum',
@@ -57,8 +56,7 @@ const reader = async (bucket) => {
                     timestamp: record.time,
                 };
             }
-            console.info(`end md5 calc ${record.time}`);
-
+            console.info(`Read ${blob.length} bytes`);
         }
 
         await sleep(intervalMs - (Date.now() - now));
