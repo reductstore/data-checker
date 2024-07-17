@@ -14,7 +14,7 @@ const intervalMs = process.env.TIME_INTERVAL ? process.env.TIME_INTERVAL : 1000;
 console.log(`Server URL ${serverUrl}`);
 
 const client = new Client(serverUrl, {apiToken: apiToken, timeout: 5000});
-const bigBlob = crypto.randomBytes(20_000_000);
+const bigBlob = crypto.randomBytes(2 ** 20);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
