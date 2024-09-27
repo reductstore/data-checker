@@ -33,7 +33,6 @@ const writer = async (bucket) => {
 
         const record = await bucket.beginWrite(entryName, {labels: {md5: md5(blob), size: size}});
         await record.write(blob);
-        console.log(`Write ${blob.length} bytes`);
         await sleep(intervalMs - (Date.now() - now));
     }
 };
@@ -56,7 +55,6 @@ const reader = async (bucket) => {
                     timestamp: record.time,
                 };
             }
-            console.info(`Read ${blob.length} bytes`);
         }
 
         await sleep(intervalMs - (Date.now() - now));
