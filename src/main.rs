@@ -1,15 +1,14 @@
+use futures_util::stream::StreamExt;
 use log::{error, info};
 use rand::distributions::{Alphanumeric, DistString};
+use rand::Rng;
+use reduct_base::internal_server_error;
 use reduct_rs::{Bucket, ReductClient, ReductError};
 use simple_logger::SimpleLogger;
 use std::env;
-use std::fmt::format;
 use std::time::Duration;
-use tokio::time::{sleep, Instant};
-use futures_util::stream::StreamExt;
-use rand::Rng;
-use reduct_base::internal_server_error;
 use tokio::pin;
+use tokio::time::{sleep, Instant};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -21,10 +20,12 @@ async fn main() {
         .unwrap_or("1000".to_string())
         .parse::<u64>()
         .expect("INTERVAL_MS must be a number");
-    let interval_ms =Duration::from_millis(interval_ms);
+    let interval_ms = Duration::from_millis(interval_ms);
 
-
-    SimpleLogger::new().with_level(log::LevelFilter::Info).init().unwrap();
+    SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
+        .init()
+        .unwrap();
     info!("Server URL: {}", server_url);
 
     let client = ReductClient::builder()
@@ -50,7 +51,11 @@ async fn main() {
     }
 }
 
-async fn reader(bucket: Bucket, entry_name: String, interval_ms: Duration) -> Result<(), ReductError> {
+async fn reader(
+    bucket: Bucket,
+    entry_name: String,
+    interval_ms: Duration,
+) -> Result<(), ReductError> {
     loop {
         let now = Instant::now();
         let entry = bucket
@@ -61,10 +66,7 @@ async fn reader(bucket: Bucket, entry_name: String, interval_ms: Duration) -> Re
             .expect("Entry not found")
             .clone();
 
-        let mut stream = bucket.query(&entry.name)
-            .limit(100)
-            .send()
-            .await?;
+        let stream = bucket.query(&entry.name).limit(100).send().await?;
 
         pin!(stream);
         while let Some(result) = stream.next().await {
@@ -74,10 +76,10 @@ async fn reader(bucket: Bucket, entry_name: String, interval_ms: Duration) -> Re
             let md5 = format!("{:x}", md5::compute(&data));
             if &md5 != labels.get("md5").unwrap() {
                 return Err(internal_server_error!(
-                     "MD5 mismatch: expected {}, got {}",
-                     labels.get("md5").unwrap(),
-                     md5
-                 ));
+                    "MD5 mismatch: expected {}, got {}",
+                    labels.get("md5").unwrap(),
+                    md5
+                ));
             }
         }
 
@@ -87,7 +89,11 @@ async fn reader(bucket: Bucket, entry_name: String, interval_ms: Duration) -> Re
     }
 }
 
-async fn writer(bucket: Bucket, entry_name: String, interval_ms: Duration) -> Result<(), ReductError> {
+async fn writer(
+    bucket: Bucket,
+    entry_name: String,
+    interval_ms: Duration,
+) -> Result<(), ReductError> {
     let blob = Alphanumeric.sample_string(&mut rand::thread_rng(), 20_000_000);
 
     loop {
@@ -102,7 +108,8 @@ async fn writer(bucket: Bucket, entry_name: String, interval_ms: Duration) -> Re
             "medium"
         };
 
-        bucket.write_record(&entry_name)
+        bucket
+            .write_record(&entry_name)
             .add_label("md5", &format!("{:x}", md5::compute(&slice)))
             .add_label("size", size)
             .data(slice)
