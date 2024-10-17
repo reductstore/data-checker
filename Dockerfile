@@ -1,10 +1,14 @@
-FROM node:18-slim
+FROM rust:1.81 as builder
 
-COPY package.json .
-COPY package-lock.json .
+WORKDIR /app
 
-RUN npm ci
+COPY Cargo.toml .
+COPY Cargo.lock .
+COPY src src
 
-COPY . .
+RUN cargo build --release
 
-CMD ["npm", "start"]
+FROM ubuntu:24.04
+
+COPY --from=builder /app/target/release/data-checker /usr/local/bin/data-checker
+CMD ["data-checker"]
