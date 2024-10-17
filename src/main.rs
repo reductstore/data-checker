@@ -66,7 +66,7 @@ async fn reader(
             .expect("Entry not found")
             .clone();
 
-        let stream = bucket.query(&entry.name).limit(100).send().await?;
+        let stream = bucket.query(&entry.name).limit(5).send().await?;
 
         pin!(stream);
         while let Some(result) = stream.next().await {
