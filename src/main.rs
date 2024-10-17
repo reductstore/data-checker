@@ -6,7 +6,7 @@ use reduct_base::internal_server_error;
 use reduct_rs::{Bucket, ReductClient, ReductError};
 use simple_logger::SimpleLogger;
 use std::env;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use tokio::pin;
 use tokio::time::{sleep, Instant};
 
@@ -66,7 +66,9 @@ async fn reader(
             .expect("Entry not found")
             .clone();
 
-        let stream = bucket.query(&entry.name).limit(5).send().await?;
+        let stream = bucket.query(&entry.name)
+            .start(SystemTime::now() - Duration::from_secs(60))
+            .limit(5).send().await?;
 
         pin!(stream);
         while let Some(result) = stream.next().await {
