@@ -67,8 +67,8 @@ async fn reader(
             .clone();
 
         let stream = bucket.query(&entry.name)
-            .start(SystemTime::now() - Duration::from_secs(60))
-            .limit(5).send().await?;
+            .start(SystemTime::now() - interval_ms*2)
+            .limit(1).send().await?;
 
         pin!(stream);
         while let Some(result) = stream.next().await {
