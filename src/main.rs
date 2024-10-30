@@ -33,12 +33,12 @@ async fn main() {
         .api_token(&api_token)
         .build();
 
-    let bucket = client.get_bucket("stress_test").await.unwrap();
     let run = async move {
+        let bucket = client.get_bucket("stress_test").await?;
         if role == "reader" {
-            reader(bucket, entry_name, interval_ms).await.unwrap();
+            reader(bucket, entry_name, interval_ms).await?;
         } else if role == "writer" {
-            writer(bucket, entry_name, interval_ms).await.unwrap();
+            writer(bucket, entry_name, interval_ms).await?;
         } else {
             panic!("Invalid role: {}", role);
         }
@@ -68,6 +68,7 @@ async fn reader(
 
         let stream = bucket.query(&entry.name)
             .start(SystemTime::now() - interval_ms*2)
+            .stop(SystemTime::now())
             .limit(1).send().await?;
 
         pin!(stream);
@@ -76,6 +77,12 @@ async fn reader(
             let labels = record.labels().clone();
             let data = record.bytes().await?;
             let md5 = format!("{:x}", md5::compute(&data));
+            info!(
+                "Read record: size={}, md5={}, labels={:?}",
+                data.len(),
+                md5,
+                labels
+            );
             if &md5 != labels.get("md5").unwrap() {
                 return Err(internal_server_error!(
                     "MD5 mismatch: expected {}, got {}",
