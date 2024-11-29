@@ -1,5 +1,5 @@
 use futures_util::stream::StreamExt;
-use log::{error, info};
+use log::{debug, error, info};
 use rand::distributions::{Alphanumeric, DistString};
 use rand::Rng;
 use reduct_base::internal_server_error;
@@ -26,7 +26,7 @@ async fn main() {
         .with_level(log::LevelFilter::Info)
         .init()
         .unwrap();
-    info!("Server URL: {}", server_url);
+    info!("Connecting to: {}", server_url);
 
     let client = ReductClient::builder()
         .url(&server_url)
@@ -66,10 +66,13 @@ async fn reader(
             .expect("Entry not found")
             .clone();
 
-        let stream = bucket.query(&entry.name)
-            .start(SystemTime::now() - interval_ms*2)
+        let stream = bucket
+            .query(&entry.name)
+            .start(SystemTime::now() - interval_ms * 2)
             .stop(SystemTime::now())
-            .limit(1).send().await?;
+            .limit(1)
+            .send()
+            .await?;
 
         pin!(stream);
         while let Some(result) = stream.next().await {
@@ -77,7 +80,7 @@ async fn reader(
             let labels = record.labels().clone();
             let data = record.bytes().await?;
             let md5 = format!("{:x}", md5::compute(&data));
-            info!(
+            debug!(
                 "Read record: size={}, md5={}, labels={:?}",
                 data.len(),
                 md5,
