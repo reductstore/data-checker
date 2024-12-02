@@ -68,7 +68,7 @@ async fn reader(
 
         let stream = bucket
             .query(&entry.name)
-            .start(SystemTime::now() - interval_ms * 2)
+            .start(SystemTime::now() - interval_ms * 4)
             .stop(SystemTime::now())
             .limit(1)
             .send()
