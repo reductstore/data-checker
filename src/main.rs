@@ -106,7 +106,7 @@ async fn writer(
     entry_name: String,
     interval_ms: Duration,
 ) -> Result<(), ReductError> {
-    let blob = Alphanumeric.sample_string(&mut rand::thread_rng(), 20_000_000);
+    let blob = Alphanumeric.sample_string(&mut rand::thread_rng(), 18_000_000);
 
     loop {
         let now = Instant::now();
