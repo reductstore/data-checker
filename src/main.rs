@@ -124,6 +124,7 @@ async fn writer(
             .write_record(&entry_name)
             .add_label("md5", &format!("{:x}", md5::compute(&slice)))
             .add_label("size", size)
+            .content_length(slice.len() as u64)
             .data(slice)
             .send()
             .await?;
